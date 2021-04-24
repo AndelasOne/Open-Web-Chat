@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { IUser, UserSchema, IUserDocument } from "./types";
+import { IUser, UserSchema, IUserDocument, IUserUpdate } from "./types";
 import { Collection, model, Model } from "mongoose";
 
 // Create User Schema
@@ -15,14 +15,84 @@ const getUserByName = async (username: String) => {
   return user;
 };
 
-const registerUser: RequestHandler = async (req, res) => {
-  const {
-    username: usernameInput,
-    password: passwordInput,
-  } = req.body as IUser;
+// Update User
+const updateUser = async (username: String, status: String) => {
+  const userToUpdate = await getUserByName(username);
 
-  // Check if username & password are not empty
-  if (usernameInput.length > 0 && passwordInput.length > 0) {
+  //make sure user exist (should be catched already by UI)
+  if (!userToUpdate) {
+    console.log("Cant update user: User does not exist!");
+    return;
+  }
+
+  await userModel.where({ username: username }).updateOne({ status: status });
+  const updatedUser = await getUserByName(username);
+  return updatedUser;
+};
+
+// Handle User Change
+const changeUser: RequestHandler = async (req, res) => {
+  if (!req.body || !req.body.username || !req.body.status) {
+    console.log("StatusUpdate empty!");
+    res.status(404);
+    res.send("StatusUpdate empty!");
+    return;
+  }
+  const { username, status } = req.body as IUserUpdate;
+  if (status !== "logged_in" && status !== "logged_out") {
+    console.log("Status Error!");
+    res.status(404);
+    res.send("Status Error!");
+    return;
+  }
+  const possibleUser = await updateUser(username, status);
+  if (!possibleUser) {
+    res.status(404);
+    res.end();
+    return;
+  }
+  console.log("Changed user!");
+  res.status(200);
+  res.send({
+    username: possibleUser.username,
+    room_id: possibleUser.room_id,
+    status: possibleUser.status,
+  });
+  return;
+};
+
+// Handle User Request
+const handleUserRequest: RequestHandler = async (req, res) => {
+  const usernameInput = req.query.username as IUser["username"];
+  if (!usernameInput) {
+    console.log("No username given!");
+    res.status(404);
+    res.send();
+    return;
+  }
+  const userFromDB = await getUserByName(usernameInput);
+  //console.log(userFromDB);
+
+  if (!userFromDB) {
+    console.log("User not found!");
+    res.status(404);
+    res.send({ error: "User not found!" });
+    return;
+  }
+  const { username, room_id, status } = userFromDB as IUser;
+  console.log("Found user: " + userFromDB.username);
+  res.status(200);
+  res.send({ username: username, room_id: room_id, status: status });
+};
+
+// Handle User Register
+const registerUser: RequestHandler = async (req, res) => {
+  if (req.body && req.body.username && req.body.password) {
+    const {
+      username: usernameInput,
+      password: passwordInput,
+    } = req.body as IUser;
+
     const userFromDB = await getUserByName(usernameInput);
 
     // User already exists
@@ -30,6 +100,7 @@ const registerUser: RequestHandler = async (req, res) => {
       console.log("Could not insert user!");
       res.status(404);
       res.send("The user is already registered!");
+      return;
     }
     const newUser: IUserDocument = await userModel.create({
       username: usernameInput,
@@ -41,7 +112,11 @@ const registerUser: RequestHandler = async (req, res) => {
     // Successfuly inserted user
     console.log("Insertet User into DB! Registered ", newUser.username);
     res.status(200);
-    res.send({ username: newUser.username });
+    res.send({
+      username: newUser.username,
+      room_id: newUser.room_id,
+      status: newUser.status,
+    });
     return;
   }
 
@@ -52,32 +127,40 @@ const registerUser: RequestHandler = async (req, res) => {
 };
 
 // login user
-const userLogin: RequestHandler = async (req, res) => {
+const loginUser: RequestHandler = async (req, res) => {
   const {
     username: usernameInput,
     password: passwordInput,
   } = req.body as IUser;
 
-  //Abfrage mit der Datenbank
   if (usernameInput.length > 0 && passwordInput.length > 0) {
     const userFromDB = await getUserByName(usernameInput);
 
     if (!userFromDB) {
       console.log("User not found!");
       res.status(404);
-      res.send("User not registered!");
+      res.send({ error: "User not registered!" });
       return;
     }
 
     // check if username and password are correct
     if (userFromDB.password == passwordInput) {
-      res.send({ username: userFromDB.username });
+      console.log("Credentials are correct!");
+      await updateUser(userFromDB.username, "logged_in");
+
+      res.status(200);
+      res.send({
+        username: userFromDB.username,
+        room_id: userFromDB.room_id,
+        status: "logged_in",
+      });
       return;
     }
   }
   // Return Error Message
+  console.log("Wrong password!");
   res.status(404);
-  res.send("Wrong password!");
+  res.send({ error: "Wrong password!" });
 };
 
-export { userLogin, registerUser };
+export { loginUser, registerUser, handleUserRequest, changeUser };

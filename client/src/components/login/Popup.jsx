@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button, Modal, ModalBody, ModalFooter } from "reactstrap";
 
 const Popup = ({ modal, toggle, msg }) => {

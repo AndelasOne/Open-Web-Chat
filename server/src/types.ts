@@ -14,6 +14,11 @@ interface IUser {
   status: String;
 }
 
+interface IUserUpdate {
+  username: String;
+  status: String;
+}
+
 const UserSchema: Schema = new Schema({
   username: {
     type: String,
@@ -35,4 +40,4 @@ const UserSchema: Schema = new Schema({
   },
 });
 
-export { UserSchema, IUser, IUserDocument };
+export { UserSchema, IUser, IUserDocument, IUserUpdate };

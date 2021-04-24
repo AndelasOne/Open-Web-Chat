@@ -10,3 +10,7 @@ npm install -D @types/mongoose (for tsc types)
 # run server
 
 npm run dev
+
+# tsc watch changes
+
+npx tsc --watch

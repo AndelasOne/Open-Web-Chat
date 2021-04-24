@@ -4,18 +4,18 @@ import { Header } from "./Header";
 import { ChatMainContent } from "./ChatMainContent";
 import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext } from "react";
 import { SocketContext } from "../../socket";
 import { Room } from "./Room";
 
 const serverURL = "http://localhost:5000/datenbanken/";
 
-// fetch ChatMessages
-const fetchChatMessages = async () => {
-  const res = await fetch(serverURL);
-  const data = await res.json();
-  return data;
-};
+// // fetch ChatMessages
+// const fetchChatMessages = async () => {
+//   const res = await fetch(serverURL);
+//   const data = await res.json();
+//   return data;
+// };
 
 function ChatView({ loggedInUser, onLeave, setLoggedInUser }) {
   const [chatMessages, setChatMessages] = useState([]);
@@ -38,7 +38,7 @@ function ChatView({ loggedInUser, onLeave, setLoggedInUser }) {
       });
     };
     getMessages();
-  }, []);
+  });
 
   // post a new message to chat window
   const postMessage = async (message) => {

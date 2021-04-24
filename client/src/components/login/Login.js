@@ -8,22 +8,57 @@ import { RiLoginCircleFill } from "react-icons/ri";
 import { useHistory } from "react-router-dom";
 import { Popup } from "./Popup";
 
-function Login({
-  loginActive,
-  setLoginState,
-  fetchSingleUser,
-  addUser,
-  setLoggedInUser,
-  changeUserStatus,
-}) {
+const serverURL = "http://localhost:4000/";
+
+function Login({ setLoggedInUser, changeUserStatus }) {
   const [username, setUsersame] = useState("");
   const [password, setPassword] = useState("");
   const [modal, setModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+
+  const [loginActive, setLoginActive] = useState(true);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
   const toggle = () => setModal(!modal);
   const history = useHistory();
 
-  // Register and Login
+  // Add a User to registered User
+  const addUser = async (user) => {
+    setRegisteredUsers([...registeredUsers, user]);
+
+    const res = await fetch(serverURL + "register", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+    const data = res.json();
+    console.log(data);
+  };
+
+  // Login User
+  const loginUser = async (username, password) => {
+    const res = await fetch(serverURL + "login", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    console.log(data);
+    return data;
+  };
+
+  // getSingleUser
+  const getUser = async (username) => {
+    const res = await fetch(serverURL + "register?username=" + username);
+    const user = await res.json();
+    return user;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,11 +73,12 @@ function Login({
       return;
     }
 
-    const possibleRegisteredUser = await fetchSingleUser(username);
+    const possibleRegisteredUser = await getUser(username); //TODO: fetchSingleUser
 
+    console.log(possibleRegisteredUser);
     // register User if not exist
     if (!loginActive) {
-      if (possibleRegisteredUser !== undefined) {
+      if (!possibleRegisteredUser.error) {
         setModalMessage("Username already registered!");
         toggle();
 
@@ -52,30 +88,32 @@ function Login({
         const newUser = {
           username: username,
           password: password,
-          status: "logged_out",
         };
         await addUser(newUser);
         setModalMessage("New User registered!");
         toggle();
+        return;
       }
     } else {
-      if (possibleRegisteredUser === undefined) {
+      if (possibleRegisteredUser.error) {
         setModalMessage("Username not registered!");
         toggle();
 
         return;
       } else {
         //Sign in user
-        if (possibleRegisteredUser.password === password) {
-          setLoggedInUser(possibleRegisteredUser);
-          toggle();
+        console.log(username, password);
+        const res = await loginUser(username, password);
 
-          //update user status on server
-          await changeUserStatus(possibleRegisteredUser, "logged_in");
-          history.push("./ChatView");
-        } else {
-          setModalMessage("Password incorrect!");
+        //check if response is error msg
+        if (res.error) {
+          setModalMessage(res.error);
           toggle();
+        }
+        // Login user
+        else {
+          setLoggedInUser(res);
+          history.push("./ChatView");
         }
       }
     }
@@ -115,7 +153,7 @@ function Login({
               </div>
               <p
                 onClick={() => {
-                  setLoginState(!loginActive);
+                  setLoginActive(!loginActive);
                 }}
                 style={{ cursor: "pointer" }}
               >

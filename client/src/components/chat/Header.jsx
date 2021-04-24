@@ -10,8 +10,9 @@ const Header = ({ onLeave, loggedInUser, setLoggedInUser }) => {
   const toggle = () => setDropdownOpen((prevState) => !prevState);
 
   const logOut = async () => {
-    await onLeave(loggedInUser, "logged_out");
+    await onLeave(loggedInUser.username, "logged_out");
     setLoggedInUser(undefined);
+    history.push("/");
   };
 
   return (
