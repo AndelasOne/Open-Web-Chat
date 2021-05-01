@@ -10,6 +10,20 @@ const getUserByName = async (username) => {
     const user = await userModel.findOne({ username });
     return user;
 };
+// Update Room in User
+const updateUserRoom = async (username, room_name, room_id) => {
+    const userToUpdate = await getUserByName(username);
+    //make sure user exist (should be catched already by UI)
+    if (!userToUpdate) {
+        console.log("Cant update user: User does not exist!");
+        return;
+    }
+    await userModel
+        .where({ username: username })
+        .updateOne({ room_name: room_name, room_id: room_id });
+    const updatedUser = await getUserByName(username);
+    return updatedUser;
+};
 // Update User
 const updateUser = async (username, status) => {
     const userToUpdate = await getUserByName(username);
@@ -22,7 +36,7 @@ const updateUser = async (username, status) => {
     const updatedUser = await getUserByName(username);
     return updatedUser;
 };
-// Handle User Change
+// Handle User Login Change
 const changeUser = async (req, res) => {
     if (!req.body || !req.body.username || !req.body.status) {
         console.log("StatusUpdate empty!");
@@ -48,6 +62,7 @@ const changeUser = async (req, res) => {
     res.send({
         username: possibleUser.username,
         room_id: possibleUser.room_id,
+        room_name: possibleUser.room_name,
         status: possibleUser.status,
     });
     return;
@@ -63,17 +78,21 @@ const handleUserRequest = async (req, res) => {
         return;
     }
     const userFromDB = await getUserByName(usernameInput);
-    //console.log(userFromDB);
     if (!userFromDB) {
         console.log("User not found!");
         res.status(404);
         res.send({ error: "User not found!" });
         return;
     }
-    const { username, room_id, status } = userFromDB;
+    const { username, room_id, room_name, status } = userFromDB;
     console.log("Found user: " + userFromDB.username);
     res.status(200);
-    res.send({ username: username, room_id: room_id, status: status });
+    res.send({
+        username: username,
+        room_id: room_id,
+        room_name: room_name,
+        status: status,
+    });
 };
 exports.handleUserRequest = handleUserRequest;
 // Handle User Register
@@ -92,6 +111,7 @@ const registerUser = async (req, res) => {
             username: usernameInput,
             password: passwordInput,
             room_id: 0,
+            room_name: "datenbanken",
             status: "logged_out",
         });
         // Successfuly inserted user
@@ -100,6 +120,7 @@ const registerUser = async (req, res) => {
         res.send({
             username: newUser.username,
             room_id: newUser.room_id,
+            room_name: newUser.room_name,
             status: newUser.status,
         });
         return;
@@ -129,6 +150,7 @@ const loginUser = async (req, res) => {
             res.send({
                 username: userFromDB.username,
                 room_id: userFromDB.room_id,
+                room_name: userFromDB.room_name,
                 status: "logged_in",
             });
             return;

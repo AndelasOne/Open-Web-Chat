@@ -7,7 +7,7 @@ import {
 import { useState } from "react";
 import { Popup } from "../login/Popup";
 
-const AddRoom = ({ toggleDropdown, dropdownOpen, onAddRoom, onDeleteRoom }) => {
+const AddRoom = ({ toggleDropdown, dropdownOpen, socket, chatRooms }) => {
   const [modal, setModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const toggleModal = () => setModal(!modal);
@@ -17,20 +17,22 @@ const AddRoom = ({ toggleDropdown, dropdownOpen, onAddRoom, onDeleteRoom }) => {
   const onAdd = (e) => {
     e.preventDefault();
 
-    const roomNameFromDB = "Datenbanken";
-
-    //TODO: Fetch Roomname
     if (!roomName) {
-      setModalMessage("Please enter a Groupname first!");
+      setModalMessage("Please enter a Room first!");
       toggleModal();
       return;
     }
-    if (roomNameFromDB) {
+    if (
+      chatRooms.filter((element) => element.room_name === roomName).length > 0
+    ) {
       setModalMessage("Roomname already exists!");
       toggleModal();
       return;
     }
-    onAddRoom(roomName);
+    // generate room ID
+    const id = Math.floor(Math.random() * 9999);
+
+    socket.emit("addRoom", { room_name: roomName, room_id: id });
     setModalMessage(`Added ${roomName}!`);
     toggleModal();
   };
@@ -38,21 +40,19 @@ const AddRoom = ({ toggleDropdown, dropdownOpen, onAddRoom, onDeleteRoom }) => {
   const onDelete = (e) => {
     e.preventDefault();
 
-    const roomNameFromDB = "Datenbanken";
-
-    //TODO: Fetch Roomname
-
     if (!roomName) {
       setModalMessage("Please enter a Groupname first!");
       toggleModal();
       return;
     }
-    if (!roomNameFromDB) {
+    if (
+      chatRooms.filter((element) => element.room_name === roomName).length === 0
+    ) {
       setModalMessage("Nothing to delete!");
       toggleModal();
       return;
     }
-    onDeleteRoom(roomName);
+    socket.emit("deleteRoom", roomName);
     setModalMessage(`Deleted ${roomName}!`);
     toggleModal();
   };
@@ -67,6 +67,7 @@ const AddRoom = ({ toggleDropdown, dropdownOpen, onAddRoom, onDeleteRoom }) => {
             type="text"
             name="name"
             value={roomName}
+            style={{ marginInline: "5px" }}
             onChange={(event) => setRoomName(event.target.value)}
           />
         </form>

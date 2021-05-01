@@ -10,21 +10,19 @@ import { Popup } from "./Popup";
 
 const serverURL = "http://localhost:4000/";
 
-function Login({ setLoggedInUser, changeUserStatus }) {
+function Login({ setLoggedInUser, joinChatroom }) {
   const [username, setUsersame] = useState("");
   const [password, setPassword] = useState("");
   const [modal, setModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
   const [loginActive, setLoginActive] = useState(true);
-  const [registeredUsers, setRegisteredUsers] = useState([]);
+
   const toggle = () => setModal(!modal);
   const history = useHistory();
 
   // Add a User to registered User
   const addUser = async (user) => {
-    setRegisteredUsers([...registeredUsers, user]);
-
     const res = await fetch(serverURL + "register", {
       method: "POST",
       headers: {
@@ -34,7 +32,6 @@ function Login({ setLoggedInUser, changeUserStatus }) {
       body: JSON.stringify(user),
     });
     const data = res.json();
-    console.log(data);
   };
 
   // Login User
@@ -48,7 +45,6 @@ function Login({ setLoggedInUser, changeUserStatus }) {
       body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
-    console.log(data);
     return data;
   };
 
@@ -75,7 +71,6 @@ function Login({ setLoggedInUser, changeUserStatus }) {
 
     const possibleRegisteredUser = await getUser(username); //TODO: fetchSingleUser
 
-    console.log(possibleRegisteredUser);
     // register User if not exist
     if (!loginActive) {
       if (!possibleRegisteredUser.error) {
@@ -102,17 +97,16 @@ function Login({ setLoggedInUser, changeUserStatus }) {
         return;
       } else {
         //Sign in user
-        console.log(username, password);
-        const res = await loginUser(username, password);
-
+        const potentialUser = await loginUser(username, password);
         //check if response is error msg
-        if (res.error) {
-          setModalMessage(res.error);
+        if (potentialUser.error) {
+          setModalMessage(potentialUser.error);
           toggle();
         }
         // Login user
         else {
-          setLoggedInUser(res);
+          setLoggedInUser(potentialUser);
+          await joinChatroom(potentialUser.room_name, potentialUser.room_id);
           history.push("./ChatView");
         }
       }

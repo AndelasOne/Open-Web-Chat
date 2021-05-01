@@ -5,12 +5,12 @@ function ChatMessage({ loggedinUser, username, msg, index, timeStamp }) {
       id={index}
       style={
         loggedinUser.username === username
-          ? { float: "right", clear: "both", background: "#b0ffd0" }
-          : { float: "left", clear: "both" }
+          ? { alignSelf: "flex-end", clear: "both", background: "#b0ffd0" }
+          : { alignSelf: "flex-start", clear: "both" }
       }
     >
       <p className="meta">
-        {username} <span>{timeStamp}pm</span>
+        {username} <span>{timeStamp}</span>
       </p>
       <p className="text">{msg}</p>
     </div>

@@ -10,6 +10,8 @@ const socket_io_1 = require("socket.io");
 const cors_1 = __importDefault(require("cors"));
 const http_1 = require("http");
 const login_1 = require("./login");
+const messages_1 = require("./messages");
+const rooms_1 = require("./rooms");
 const database_1 = require("./database");
 const app = express_1.default();
 const PORT = 4000 || process.env.PORT;
@@ -35,20 +37,44 @@ const options = {
 };
 app.use(body_parser_1.default.json());
 app.use(cors_1.default());
+// Socket IO Events
 io.on("connection", (socket) => {
     console.log("a user connected");
-    socket.on("message", ({ username, message, time }) => {
-        io.emit("message", { username, message, time });
-        //Speicherung in der Datenbank
+    socket.on("message", ({ username, message, room_id, room_name, time }) => {
+        io.emit("message", { username, message, room_id, room_name, time });
+        messages_1.insertMessage({
+            username: username,
+            message: message,
+            room_id: room_id,
+            room_name: room_name,
+            time: time,
+        });
+    });
+    socket.on("addRoom", ({ room_name, room_id }) => {
+        io.emit("addRoom", { room_name, room_id });
+        rooms_1.addRoom({ room_name, room_id });
+    });
+    socket.on("deleteRoom", (room_name) => {
+        io.emit("deleteRoom", room_name);
+        messages_1.deleteMessagesByName(room_name);
+        rooms_1.deleteRoomByName(room_name);
     });
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
 });
+// Login and Register
 app.post("/login", login_1.loginUser);
 app.post("/register", login_1.registerUser);
 app.get("/register", login_1.handleUserRequest);
 app.put("/register", login_1.changeUser);
+// Messaging
+app.post("/message", messages_1.messagePost);
+app.get("/message", messages_1.messagesLoad);
+// Room
+app.post("/room", rooms_1.roomAdd);
+app.delete("/room", rooms_1.roomDelete);
+app.get("/room", rooms_1.roomLoad);
 database_1.connectToDatabase().then(() => {
     //Server Started
     httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}\n\nFollow the link: http://localhost:${PORT}`));

@@ -11,32 +11,49 @@ import { SocketContext, socket } from "./socket";
 const serverURL = "http://localhost:4000/";
 
 const App = () => {
-  
-  const [loggedInUser, setLoggedInUser] = useState(undefined);
-  
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatRooms, setChatRooms] = useState([]);
 
-  // //Fetch all registered users
-  // const fetchRegisteredUsers = async () => {
-  //   const res = await fetch(serverURL + "registeredUsers/");
-  //   const users = await res.json();
-  //   return users;
-  // };
+  // fetch ChatMessages
+  const loadChatMessages = async (room_name, room_id) => {
+    const res = await fetch(serverURL + "message?room_name=" + room_name+ "&room_id="+room_id);
+    const data = await res.json();
+    return data;
+  };
 
-  // //TODO: cleanup Fetch Single user
-  // const fetchSingleUser = async (name) => {
-  //   const res = await fetch(
-  //     serverURL + "registeredUsers?" + `username=${name}`
-  //   );
-  //   const user = await res.json();
-  //   return user[0];
-  // };
+  // load ChatRooms
+  const loadChatRooms = async () => {
+    const res = await fetch(serverURL + "room");
+    const data = await res.json();
+    return data;
+  };
+
+  // join chatroom
+  const joinChatroom = async (room_name, room_id) => {
+    //Change Room in User
+    if (loggedInUser !==undefined && loggedInUser.room_name !== room_name){
+      changeUserRoomStatus(room_name, room_id);
+    }
+  
+    const messages = await loadChatMessages(room_name, room_id);
+    const chatRooms = await loadChatRooms();
+
+    setChatMessages(messages);
+    setChatRooms(chatRooms);
+  };
+
+  // change Room Status of User
+  const changeUserRoomStatus = (room_name, room_id) => {
+    const updatedUser = {username: loggedInUser.username, room_id: room_id, room_name: room_name, status: loggedInUser.status};
+    setLoggedInUser(updatedUser);
+  };
 
   // Login + Logout User
   const changeUserStatus = async (username, loginStatus) => {
     const updateUserStatus = { username: username, status: loginStatus };
-    console.log(updateUserStatus);
 
-    const res = await fetch(serverURL + "register", {
+    await fetch(serverURL + "register", {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -44,8 +61,6 @@ const App = () => {
       },
       body: JSON.stringify(updateUserStatus),
     });
-    const data = res.json();
-    return data
   };
 
   return (
@@ -59,6 +74,8 @@ const App = () => {
               <div className="App">
                 <Login
                   setLoggedInUser={setLoggedInUser}
+                  loggedInUser={loggedInUser}
+                  joinChatroom={joinChatroom}
                 />
               </div>
             </>
@@ -74,6 +91,11 @@ const App = () => {
                   loggedInUser={loggedInUser}
                   setLoggedInUser={setLoggedInUser}
                   onLeave={changeUserStatus}
+                  chatMessages={chatMessages}
+                  setChatMessages={setChatMessages}
+                  joinChatroom={joinChatroom}
+                  chatRooms={chatRooms}
+                  setChatRooms={setChatRooms}
                 />
               </div>
             </>

@@ -3,7 +3,13 @@ import { useHistory } from "react-router-dom";
 import { useState } from "react";
 import { AddRoom } from "./AddRoom";
 
-const Header = ({ onLeave, loggedInUser, setLoggedInUser }) => {
+const Header = ({
+  onLeave,
+  loggedInUser,
+  setLoggedInUser,
+  socket,
+  chatRooms,
+}) => {
   const history = useHistory();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -11,7 +17,11 @@ const Header = ({ onLeave, loggedInUser, setLoggedInUser }) => {
 
   const logOut = async () => {
     await onLeave(loggedInUser.username, "logged_out");
+    history.push("/");
     setLoggedInUser(undefined);
+  };
+
+  const logIn = () => {
     history.push("/");
   };
 
@@ -25,13 +35,18 @@ const Header = ({ onLeave, loggedInUser, setLoggedInUser }) => {
             style={{ paddingBottom: "5px" }}
             className="btn"
             type="button"
-            onClick={loggedInUser !== undefined ? logOut : history.push("/")}
+            onClick={loggedInUser !== undefined ? logOut : logIn}
           >
             {loggedInUser !== undefined ? "Logout" : "Login"}
           </button>
         </div>
         <div className="row" style={{ float: "right", paddingTop: "5px" }}>
-          <AddRoom toggleDropdown={toggle} dropdownOpen={dropdownOpen} />
+          <AddRoom
+            toggleDropdown={toggle}
+            dropdownOpen={dropdownOpen}
+            socket={socket}
+            chatRooms={chatRooms}
+          />
         </div>
       </div>
     </header>

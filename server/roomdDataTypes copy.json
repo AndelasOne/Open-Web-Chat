@@ -1,0 +1,16 @@
+{
+    "rooms":[
+        {
+            "room_id": 0,
+            "roomname": "Datenbanken"
+        },
+        {
+            "room_id": 1,
+            "roomname": "DHBW GroupChat"
+        },
+        {
+            "room_id": 2,
+            "roomname": "DevOps"
+        }
+    ]
+}

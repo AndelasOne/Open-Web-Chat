@@ -12,7 +12,24 @@ import {
   handleUserRequest,
   changeUser,
 } from "./login";
+
+import {
+  messagePost,
+  messagesLoad,
+  insertMessage,
+  deleteMessagesByName,
+} from "./messages";
+
+import {
+  addRoom,
+  roomDelete,
+  deleteRoomByName,
+  roomAdd,
+  roomLoad,
+} from "./rooms";
+
 import { connectToDatabase } from "./database";
+import { IMessage, IRoom } from "./types";
 
 const app = express();
 const PORT = 4000 || process.env.PORT;
@@ -42,23 +59,56 @@ const options: cors.CorsOptions = {
 app.use(bodyParser.json());
 app.use(cors());
 
+// Socket IO Events
 io.on("connection", (socket) => {
   console.log("a user connected");
-  socket.on("message", ({ username, message, time }) => {
-    io.emit("message", { username, message, time });
 
-    //Speicherung in der Datenbank
+  socket.on(
+    "message",
+    ({ username, message, room_id, room_name, time }: IMessage) => {
+      io.emit("message", { username, message, room_id, room_name, time });
+
+      insertMessage({
+        username: username,
+        message: message,
+        room_id: room_id,
+        room_name: room_name,
+        time: time,
+      });
+    }
+  );
+
+  socket.on("addRoom", ({ room_name, room_id }: IRoom) => {
+    io.emit("addRoom", { room_name, room_id });
+    addRoom({ room_name, room_id });
   });
+
+  socket.on("deleteRoom", (room_name: String) => {
+    io.emit("deleteRoom", room_name);
+    deleteMessagesByName(room_name);
+    deleteRoomByName(room_name);
+  });
+
   socket.on("disconnect", () => {
     console.log("user disconnected");
   });
 });
 
+// Login and Register
 app.post("/login", loginUser);
 app.post("/register", registerUser);
 
 app.get("/register", handleUserRequest);
 app.put("/register", changeUser);
+
+// Messaging
+app.post("/message", messagePost);
+app.get("/message", messagesLoad);
+
+// Room
+app.post("/room", roomAdd);
+app.delete("/room", roomDelete);
+app.get("/room", roomLoad);
 
 connectToDatabase().then(() => {
   //Server Started

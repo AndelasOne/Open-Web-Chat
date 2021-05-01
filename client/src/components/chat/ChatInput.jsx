@@ -1,34 +1,33 @@
 import { RiSendPlaneFill } from "react-icons/ri";
 import { useState } from "react";
 
-const ChatInput = ({ currentUser, postMessage, socket }) => {
+const ChatInput = ({ currentUser, socket }) => {
   const [inputMessage, setInputMessage] = useState("");
 
   const onSend = (event) => {
-    event.preventDefault(); //keep messages after refresh
+    event.preventDefault();
 
     if (!inputMessage) {
       return;
     }
 
-    let today = new Date();
-    const timeStamp = today.getHours() + ":" + today.getMinutes();
+    const today = new Date();
+    const timeStamp =
+      ("0" + today.getHours()).slice(-2) +
+      ":" +
+      ("0" + today.getMinutes()).slice(-2);
     const date = today.getDate();
+
     socket.emit("message", {
       username: currentUser.username,
       message: inputMessage,
+      room_id: currentUser.room_id,
+      room_name: currentUser.room_name,
       time: timeStamp,
       date: date,
     });
 
     setInputMessage("");
-
-    postMessage({
-      username: currentUser.username,
-      message: inputMessage,
-      time: timeStamp,
-      date: date,
-    });
   };
 
   return (
@@ -41,6 +40,7 @@ const ChatInput = ({ currentUser, postMessage, socket }) => {
           required
           autoComplete="off"
           value={inputMessage}
+          style={{ marginInline: "5px" }}
           onChange={(event) => setInputMessage(event.target.value)}
         />
         <button className="btn">
