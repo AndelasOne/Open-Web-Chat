@@ -4,7 +4,7 @@ import { Header } from "./Header";
 import { ChatMainContent } from "./ChatMainContent";
 import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
-import { useState, useEffect, useContext } from "react";
+import { useEffect, useContext } from "react";
 import { SocketContext } from "../../socket";
 import { Room } from "./Room";
 import { Route, Redirect } from "react-router-dom";

@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-const connectToDatabase = async () => {
-  const uri =
-    "mongodb+srv://AndiAdmin:6y1iO66CBm4T@cluster0.fyjsg.mongodb.net/Open-Web-Chat?retryWrites=true&w=majority";
+import { MONGODB_URI } from "./secrets";
 
-  const db_connection = await mongoose.connect(uri, {
+const connectToDatabase = async () => {
+  const db_connection = await mongoose.connect(MONGODB_URI, {
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,

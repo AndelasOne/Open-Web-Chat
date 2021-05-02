@@ -32,7 +32,7 @@ const App = () => {
   // join chatroom
   const joinChatroom = async (room_name, room_id) => {
     //Change Room in User
-    if (loggedInUser !==undefined && loggedInUser.room_name !== room_name){
+    if (loggedInUser !==undefined && loggedInUser !==null  && loggedInUser.room_name !== room_name){
       changeUserRoomStatus(room_name, room_id);
     }
   

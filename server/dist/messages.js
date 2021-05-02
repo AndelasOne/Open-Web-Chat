@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMessagesByName = exports.deleteMessagesById = exports.insertMessage = exports.messagesLoad = exports.messagePost = void 0;
+exports.getMessages = exports.deleteMessagesByName = exports.deleteMessagesById = exports.insertMessage = exports.messagesLoad = void 0;
 const types_1 = require("./types");
 const mongoose_1 = require("mongoose");
 // Create Message Model for one Room
@@ -17,6 +17,7 @@ const getMessages = async (room_id) => {
     });
     return messages;
 };
+exports.getMessages = getMessages;
 // Delete Messages in Room
 const deleteMessagesById = async (room_id) => {
     const res = await messageModel.deleteMany({
@@ -55,28 +56,3 @@ const messagesLoad = async (req, res) => {
     res.send(messages);
 };
 exports.messagesLoad = messagesLoad;
-// Handle Message Post Request
-const messagePost = async (req, res) => {
-    if (req.body &&
-        req.body.username &&
-        req.body.message &&
-        req.body.time &&
-        req.body.room_name &&
-        req.body.room_id !== undefined) {
-        const { username, message, room_name, room_id, time, } = req.body;
-        await insertMessage({
-            username: username,
-            message: message,
-            room_id: room_id,
-            room_name: room_name,
-            time: time,
-        });
-        res.status(200);
-        res.send({ username, room_id, room_name });
-        return;
-    }
-    console.log("Error in Message!");
-    res.status(400);
-    res.send({ error: "Error in Message!" });
-};
-exports.messagePost = messagePost;

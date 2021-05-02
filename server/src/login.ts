@@ -15,27 +15,6 @@ const getUserByName = async (username: String) => {
   return user;
 };
 
-// Update Room in User
-const updateUserRoom = async (
-  username: String,
-  room_name: String,
-  room_id: number
-) => {
-  const userToUpdate = await getUserByName(username);
-
-  //make sure user exist (should be catched already by UI)
-  if (!userToUpdate) {
-    console.log("Cant update user: User does not exist!");
-    return;
-  }
-
-  await userModel
-    .where({ username: username })
-    .updateOne({ room_name: room_name, room_id: room_id });
-  const updatedUser = await getUserByName(username);
-  return updatedUser;
-};
-
 // Update User
 const updateUser = async (username: String, status: String) => {
   const userToUpdate = await getUserByName(username);
@@ -49,38 +28,6 @@ const updateUser = async (username: String, status: String) => {
   await userModel.where({ username: username }).updateOne({ status: status });
   const updatedUser = await getUserByName(username);
   return updatedUser;
-};
-
-// Handle User Login Change
-const changeUser: RequestHandler = async (req, res) => {
-  if (!req.body || !req.body.username || !req.body.status) {
-    console.log("StatusUpdate empty!");
-    res.status(404);
-    res.send("StatusUpdate empty!");
-    return;
-  }
-  const { username, status } = req.body as IUserUpdate;
-  if (status !== "logged_in" && status !== "logged_out") {
-    console.log("Status Error!");
-    res.status(404);
-    res.send("Status Error!");
-    return;
-  }
-  const possibleUser = await updateUser(username, status);
-  if (!possibleUser) {
-    res.status(404);
-    res.end();
-    return;
-  }
-  console.log("Changed user!");
-  res.status(200);
-  res.send({
-    username: possibleUser.username,
-    room_id: possibleUser.room_id,
-    room_name: possibleUser.room_name,
-    status: possibleUser.status,
-  });
-  return;
 };
 
 // Handle User Request
@@ -192,4 +139,10 @@ const loginUser: RequestHandler = async (req, res) => {
   res.send({ error: "Wrong password!" });
 };
 
-export { loginUser, registerUser, handleUserRequest, changeUser };
+export {
+  loginUser,
+  registerUser,
+  handleUserRequest,
+  getUserByName,
+  updateUser,
+};

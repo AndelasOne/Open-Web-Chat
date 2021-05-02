@@ -67,13 +67,10 @@ io.on("connection", (socket) => {
 app.post("/login", login_1.loginUser);
 app.post("/register", login_1.registerUser);
 app.get("/register", login_1.handleUserRequest);
-app.put("/register", login_1.changeUser);
+//app.put("/register", changeUser);
 // Messaging
-app.post("/message", messages_1.messagePost);
 app.get("/message", messages_1.messagesLoad);
 // Room
-app.post("/room", rooms_1.roomAdd);
-app.delete("/room", rooms_1.roomDelete);
 app.get("/room", rooms_1.roomLoad);
 database_1.connectToDatabase().then(() => {
     //Server Started

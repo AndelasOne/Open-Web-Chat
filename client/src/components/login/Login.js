@@ -23,7 +23,7 @@ function Login({ setLoggedInUser, joinChatroom }) {
 
   // Add a User to registered User
   const addUser = async (user) => {
-    const res = await fetch(serverURL + "register", {
+      await fetch(serverURL + "register", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -31,7 +31,6 @@ function Login({ setLoggedInUser, joinChatroom }) {
       },
       body: JSON.stringify(user),
     });
-    const data = res.json();
   };
 
   // Login User

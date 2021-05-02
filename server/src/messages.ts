@@ -61,46 +61,11 @@ const messagesLoad: RequestHandler = async (req, res) => {
   res.status(200);
   res.send(messages);
 };
-// Handle Message Post Request
-const messagePost: RequestHandler = async (req, res) => {
-  if (
-    req.body &&
-    req.body.username &&
-    req.body.message &&
-    req.body.time &&
-    req.body.room_name &&
-    req.body.room_id !== undefined
-  ) {
-    const {
-      username,
-      message,
-      room_name,
-      room_id,
-      time,
-    } = req.body as IMessage;
-
-    await insertMessage({
-      username: username,
-      message: message,
-      room_id: room_id,
-      room_name: room_name,
-      time: time,
-    });
-
-    res.status(200);
-    res.send({ username, room_id, room_name });
-    return;
-  }
-
-  console.log("Error in Message!");
-  res.status(400);
-  res.send({ error: "Error in Message!" });
-};
 
 export {
-  messagePost,
   messagesLoad,
   insertMessage,
   deleteMessagesById,
   deleteMessagesByName,
+  getMessages,
 };

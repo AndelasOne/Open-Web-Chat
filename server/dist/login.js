@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeUser = exports.handleUserRequest = exports.registerUser = exports.loginUser = void 0;
+exports.updateUser = exports.getUserByName = exports.handleUserRequest = exports.registerUser = exports.loginUser = void 0;
 const types_1 = require("./types");
 const mongoose_1 = require("mongoose");
 // Create User Schema
@@ -10,20 +10,7 @@ const getUserByName = async (username) => {
     const user = await userModel.findOne({ username });
     return user;
 };
-// Update Room in User
-const updateUserRoom = async (username, room_name, room_id) => {
-    const userToUpdate = await getUserByName(username);
-    //make sure user exist (should be catched already by UI)
-    if (!userToUpdate) {
-        console.log("Cant update user: User does not exist!");
-        return;
-    }
-    await userModel
-        .where({ username: username })
-        .updateOne({ room_name: room_name, room_id: room_id });
-    const updatedUser = await getUserByName(username);
-    return updatedUser;
-};
+exports.getUserByName = getUserByName;
 // Update User
 const updateUser = async (username, status) => {
     const userToUpdate = await getUserByName(username);
@@ -36,38 +23,7 @@ const updateUser = async (username, status) => {
     const updatedUser = await getUserByName(username);
     return updatedUser;
 };
-// Handle User Login Change
-const changeUser = async (req, res) => {
-    if (!req.body || !req.body.username || !req.body.status) {
-        console.log("StatusUpdate empty!");
-        res.status(404);
-        res.send("StatusUpdate empty!");
-        return;
-    }
-    const { username, status } = req.body;
-    if (status !== "logged_in" && status !== "logged_out") {
-        console.log("Status Error!");
-        res.status(404);
-        res.send("Status Error!");
-        return;
-    }
-    const possibleUser = await updateUser(username, status);
-    if (!possibleUser) {
-        res.status(404);
-        res.end();
-        return;
-    }
-    console.log("Changed user!");
-    res.status(200);
-    res.send({
-        username: possibleUser.username,
-        room_id: possibleUser.room_id,
-        room_name: possibleUser.room_name,
-        status: possibleUser.status,
-    });
-    return;
-};
-exports.changeUser = changeUser;
+exports.updateUser = updateUser;
 // Handle User Request
 const handleUserRequest = async (req, res) => {
     const usernameInput = req.query.username;

@@ -6,27 +6,11 @@ import { Server } from "socket.io";
 import cors from "cors";
 
 import { createServer } from "http";
-import {
-  loginUser,
-  registerUser,
-  handleUserRequest,
-  changeUser,
-} from "./login";
+import { loginUser, registerUser, handleUserRequest } from "./login";
 
-import {
-  messagePost,
-  messagesLoad,
-  insertMessage,
-  deleteMessagesByName,
-} from "./messages";
+import { messagesLoad, insertMessage, deleteMessagesByName } from "./messages";
 
-import {
-  addRoom,
-  roomDelete,
-  deleteRoomByName,
-  roomAdd,
-  roomLoad,
-} from "./rooms";
+import { addRoom, deleteRoomByName, roomLoad } from "./rooms";
 
 import { connectToDatabase } from "./database";
 import { IMessage, IRoom } from "./types";
@@ -99,15 +83,12 @@ app.post("/login", loginUser);
 app.post("/register", registerUser);
 
 app.get("/register", handleUserRequest);
-app.put("/register", changeUser);
+//app.put("/register", changeUser);
 
 // Messaging
-app.post("/message", messagePost);
 app.get("/message", messagesLoad);
 
 // Room
-app.post("/room", roomAdd);
-app.delete("/room", roomDelete);
 app.get("/room", roomLoad);
 
 connectToDatabase().then(() => {
