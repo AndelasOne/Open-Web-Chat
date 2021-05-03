@@ -35,6 +35,9 @@ describe("Testing messages operation", () => {
   });
 
   it("Insert and Fetched correctly", async () => {
+    // Delete Messages in Room (if exist)
+    await deleteMessagesById(mockMessage.room_id);
+
     // Insert mock Message
     const MESSAGE_COUNT = 10;
     for (let i = 0; i < MESSAGE_COUNT; i++) {
