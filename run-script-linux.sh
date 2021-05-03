@@ -1,6 +1,10 @@
 echo "downloading packages"
-npm install --prefix ./client/node_modules ./client
-npm install --prefix ./server/node_modules ./server
+cd client
+npm install 
+
+cd ../server
+npm install 
+cd ..
 
 echo "build docker images"
 docker build -f client/Dockerfile . -t "client"
